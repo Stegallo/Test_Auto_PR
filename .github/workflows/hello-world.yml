@@ -1,20 +1,22 @@
-name: Say hello!
-
-# GitHub Actions Workflows are automatically triggered by GitHub events
+name: Update AUTHORS
 on:
-  # For this workflow, we're using the workflow_dispatch event which is triggered when the user clicks Run workflow in the GitHub Actions UI
-  workflow_dispatch:
-    # The workflow_dispatch event accepts optional inputs so you can customize the behavior of the workflow
-    inputs:
-      name:
-        description: 'Person to greet'
-        required: true
-        default: 'World'
-# When the event is triggered, GitHub Actions will run the jobs indicated
+  push:
+    branches:
+      - master
 jobs:
-  say_hello:
-    # Uses a ubuntu-lates runner to complete the requested steps
+  updateAuthors:
     runs-on: ubuntu-latest
     steps:
-    - run: |
-        echo "Hello ${{ github.event.inputs.name }}!"
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Update AUTHORS
+        run: |
+          git log --format='%aN <%aE>%n%cN <%cE>' | sort -u > AUTHORS
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: update authors
+          title: Update AUTHORS
+          body: Credit new contributors by updating AUTHORS
+          branch: update-authors
